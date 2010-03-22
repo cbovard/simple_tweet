@@ -1,0 +1,6 @@
+; $Id $
+name = Simple Tweet
+description = Integrates 1 sitewide twitter account. No PUSH.
+core = 6.x
+version = 6.x-1.0
+package = Other
