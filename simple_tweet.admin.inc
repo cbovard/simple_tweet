@@ -9,17 +9,19 @@ function simple_tweet_admin_settings($form_state) {
     '#title' => t('Twitter Username'),
     '#required' => TRUE,
     '#default_value' => variable_get('simple_tweet_username', ''),
+	'#description' => t('The username is needed to create a link to your Twitter account'),
   );
-  $form['simple_tweet_password'] = array(
-    '#type' => 'password',
-    '#title' => t('Twitter Password'),
+  $form['simple_tweet_rss_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Twitter User RSS URL'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('simple_tweet_rss_url', ''),
   );
   $form['simple_tweet_block_number'] = array(
   	'#type' => 'textfield',
 	'#title' => t('Enter the number of tweets to show in multiple tweet block'),
 	'#default_value'=> variable_get('simple_tweet_block_number', '1'),
-  );
-    
+  );  
   if(module_exists('date_api')) {
      $formats = date_get_format_types();
      $options = array();
@@ -56,8 +58,14 @@ function simple_tweet_admin_settings($form_state) {
   return system_settings_form($form);
 }
 
+/**
+ * Admin form Validation
+ */
 function simple_tweet_admin_settings_submit($form, &$form_state) {
-  if(!$form_state['values']['simple_tweet_password']){ 
-  	$form_state['values']['simple_tweet_password'] = variable_get('simple_tweet_password', 'no-pass'); 
+  if(!$form_state['values']['simple_tweet_rss_url']){ 
+    form_set_error('simple_tweet_rss_url', t('Please Enter the Twitter Users RSS URL!'));
+  }
+  if(!$form_state['values']['simple_tweet_username']){ 
+    form_set_error('simple_tweet_username', t('Please Enter your Twitter Username'));
   } 
 }

@@ -46,7 +46,7 @@ function simple_tweet_perm() {
  * and one for multiple tweets.
  */
 function simple_tweet_block($op = 'list', $delta = 0, $edit = array()) {
-  $block_tweets = variable_get('simple_tweet_block_number',"1");
+  $block_tweets = variable_get('simple_tweet_block_number', "1");
   switch($op) {
 	  //list
 	  case 'list': 
@@ -114,15 +114,45 @@ function simple_tweet_theme() {
  */
 function theme_simple_tweet_list($twitters, $number = NULL) {
   $op = '';
-  if($number != '1') $op .= '<div class="simple-tweet-timeline">';
-  $count = 0;
-  foreach ($twitters->status as $twit) {
-    if(!$number || ($count < $number)) {
-      $op .= theme('simple_tweet_tweet', $twit);
-    } 
-    $count++;
+  //print $number;
+  //if number of tweets is not 1
+  if($number != '1') {
+	  $op .= '<div class="simple-tweet-timeline">';
   }
-  if($number != '1') $op .= '</div>';
+  
+  
+  $count = 0;
+  
+  if($number == NULL){
+	//if this is the tweets page
+	$count = count($twitters->channel->item);
+	for($i=0; $i<$count; $i++) {
+	  $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i]);
+	}	  
+  }else{
+	//if this is th tweets block
+	$count = $number;
+	for($i=0; $i<$count; $i++) {
+      $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i]);
+	}  
+  }
+
+  
+  //closing div
+  if($number != '1') { 
+  	  $op .= '</div>';
+  }
+  //this is to show the link to the users twitter account on twitter.com
+  if($number == NULL){
+	$op .= '<div class="simple-bottom">';
+	$op .= '<a id="follow-twitter" href="http://twitter.com/' . variable_get('simple_tweet_username', '') .'">Follow Me on Twitter</a>';
+	$op .= '</div>';  
+  }else{
+    //this is to show a link to the page of tweets
+	$op .= '<div class="simple-bottom">';
+	$op .= '<a class="follow-twitter" href="/' . SIMPLE_TWEET_PAGE .'">See More Tweets</a>';
+	$op .= '</div>';    
+  }
   return $op;
 }
 
@@ -133,8 +163,13 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
  * @return string
  */
 function theme_simple_tweet_tweet($twit) {
-  $date = _simple_tweet_format_date($twit->created_at);
-  $text = _simple_tweet_process_links($twit->text);
+  $date = _simple_tweet_format_date($twit->pubDate);
+  $text = _simple_tweet_process_links($twit->description);
+  //get the twitter username and colon of the tweet
+  $twitter_username = variable_get('simple_tweet_username', '') . ":";
+  $text = str_replace($twitter_username, "", $text);
+  $text = trim($text);
+  //add themeing html
   $op = '<div class="simple-tweet">';
   $op .= '<div class="simple-tweet-created">'. $date .'</div>';
   $op .= '<div class="simple-tweet-msg">'. $text .'</div>'; 
@@ -145,29 +180,22 @@ function theme_simple_tweet_tweet($twit) {
 /**
  * Get Tweets
  */
-function _simple_tweet_get_twitters() {
-  //set variables
-  $user_name = variable_get('simple_tweet_username', '');
-  $user_name_at = '@'.$user_name;
-  $user_pass = variable_get('simple_tweet_password', '');
-  $login = $user_name.':'.$user_pass;
-  $target = "http://twitter.com/statuses/user_timeline.xml";
-  if(!$user_pass) {
-    drupal_set_message(t('Please set your twitter username and password'), 'error'); 
+function _simple_tweet_get_twitters() {  
+  //get rss url
+  $rss_url = variable_get('simple_tweet_rss_url', '');
+  if(!$rss_url) {
+    drupal_set_message(t('Please set your Twitter User RSS Feed.'), 'error'); 
   }
-  //retrieve from twitter
-  $ch = curl_init();
-  curl_setopt($ch, CURLOPT_URL, $target);
-  curl_setopt($ch, CURLOPT_USERPWD, $login);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-   
+  //retrieve from twitter  
+  $ch = curl_init($rss_url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($ch, CURLOPT_HEADER, 0);
   $gettwit = curl_exec($ch);
-  
-  //parse the data
-  if($gettwit) { $twitters = new SimpleXMLElement($gettwit); }
-  
   curl_close($ch);
-  
+  //parse the data
+  if($gettwit) { 
+  	$twitters = new SimpleXMLElement($gettwit); 
+  }
   return $twitters;
 }
 
@@ -178,7 +206,7 @@ function _simple_tweet_process_links($text) {
 	$text = preg_replace("#(^|[\n ])([\w]+?://[\w]+[^ \"\n\r\t< ]*)#", "\\1<a href=\"\\2\">\\2</a>", $text);
     $text = preg_replace("#(^|[\n ])((www|ftp)\.[^ \"\t\n\r< ]*)#", "\\1<a href=\"http://\\2\">\\2</a>", $text);
 	$text = preg_replace("#(^|[\n ])@([^ \"\t\n\r<]*)#ise", "'\\1<a href=\"http://www.twitter.com/\\2\" target=\"_blank\">@\\2</a>'", $text);  
-	$text = preg_replace("#(^|[\n ])\#([^ \"\t\n\r<]*)#ise", "'\\1<a href=\"http://hashtags.org/search?query=\\2\" target=\"_blank\">#\\2</a>'", $text);
+	$text = preg_replace("#(^|[\n ])\#([^ \"\t\n\r<]*)#ise", "'\\1<a href=\"http://twitter.com/#search?q=\\2\" target=\"_blank\">#\\2</a>'", $text);
 	return $text;
 }
 
