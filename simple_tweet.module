@@ -13,7 +13,7 @@ define('SIMPLE_TWEET_PAGENAME', variable_get('simple_tweet_page_title', 'Our Twe
 /**
  * Implementation of hook_menu()
  */
-function simple_tweet_menu(){
+function simple_tweet_menu() {
   $items = array();
   $items['admin/settings/simple-tweet'] = array(
     'title' => t('Simple Tweet Settings'),
@@ -47,42 +47,42 @@ function simple_tweet_perm() {
  */
 function simple_tweet_block($op = 'list', $delta = 0, $edit = array()) {
   $block_tweets = variable_get('simple_tweet_block_number', "1");
-  switch($op) {
-	  //list
-	  case 'list': 
-		$blocks[0] = array(
-		  'info' => t('Latest Tweets - Multiple Tweets Block'),
-		  'status' => FALSE,
-		);
-		$blocks[1] = array(
-		  'info' => t('Latest Tweet - Single Tweet Block'),
-		  'status' => FALSE,
-		);
-		return $blocks;
-		break;
-		
-	  //configure
-	  case 'configure':
-		return $form;
-		break;
-	  
-	  //view & default
-	  case 'view': default:
-		switch ($delta) {
-		  case 0:
-			$block['subject'] = t('Latest Tweets');
-			$twitters = _simple_tweet_get_twitters();
-			$block['content'] = theme('simple_tweet_list', $twitters, $block_tweets);
-			break;
-		  case 1:
-			$block['subject'] = t('Latest Tweet');
-			$twitters = _simple_tweet_get_twitters();
-			//the variable here is different on the end because there is only one tweet.
-			$block['content'] = theme('simple_tweet_list', $twitters, 1);
-			break;
-		} //end switch
-		return $block;
-	}
+  switch ($op) {
+    //list
+    case 'list': 
+      $blocks[0] = array(
+      'info' => t('Latest Tweets - Multiple Tweets Block'),
+      'status' => FALSE,
+      );
+      $blocks[1] = array(
+      'info' => t('Latest Tweet - Single Tweet Block'),
+      'status' => FALSE,
+      );
+      return $blocks;
+    break;
+
+    //configure
+    case 'configure':
+      return $form;
+    break;
+
+    //view & default
+    case 'view': default:
+      switch ($delta) {
+        case 0:
+          $block['subject'] = t('Latest Tweets');
+          $twitters = _simple_tweet_get_twitters();
+          $block['content'] = theme('simple_tweet_list', $twitters, $block_tweets);
+        break;
+        case 1:
+          $block['subject'] = t('Latest Tweet');
+          $twitters = _simple_tweet_get_twitters();
+          //the variable here is different on the end because there is only one tweet.
+          $block['content'] = theme('simple_tweet_list', $twitters, 1);
+        break;
+    } //end switch
+  return $block;
+  }
 }
 
 /**
@@ -114,44 +114,45 @@ function simple_tweet_theme() {
  */
 function theme_simple_tweet_list($twitters, $number = NULL) {
   $op = '';
-  //print $number;
   //if number of tweets is not 1
-  if($number != '1') {
-	  $op .= '<div class="simple-tweet-timeline">';
+  if ($number != '1') {
+    $op .= '<div class="simple-tweet-timeline">';
   }
-  
-  
   $count = 0;
   
-  if($number == NULL){
-	//if this is the tweets page
-	$count = count($twitters->channel->item);
-	for($i=0; $i<$count; $i++) {
-	  $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i]);
-	}	  
-  }else{
-	//if this is th tweets block
-	$count = $number;
-	for($i=0; $i<$count; $i++) {
+  //if this is the tweets page
+  if ($number == NULL) {
+    $count = count($twitters->channel->item);
+    for ($i=0; $i<$count; $i++) {
       $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i]);
-	}  
+  //coder module says this below needs to be like this!!! ??
+  }
+  }
+  else{
+  //coder module says above has to be this way
+    //if this is the tweets block
+    $count = $number;
+    for ($i=0; $i<$count; $i++) {
+      $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i]);
+    }  
   }
 
-  
   //closing div
-  if($number != '1') { 
-  	  $op .= '</div>';
+  if ($number != '1') { 
+    $op .= '</div>';
   }
+  
   //this is to show the link to the users twitter account on twitter.com
-  if($number == NULL){
-	$op .= '<div class="simple-bottom">';
-	$op .= '<a id="follow-twitter" href="http://twitter.com/' . variable_get('simple_tweet_username', '') .'">Follow Me on Twitter</a>';
-	$op .= '</div>';  
-  }else{
+  if ($number == NULL) {
+    $op .= '<div class="simple-bottom">';
+    $op .= '<a id="follow-twitter" href="http://twitter.com/' . variable_get('simple_tweet_username', '') .'">' . variable_get('simple_tweet_page_link', '') . '</a>';
+    $op .= '</div>';  
+  }
+  else{
     //this is to show a link to the page of tweets
-	$op .= '<div class="simple-bottom">';
-	$op .= '<a class="follow-twitter" href="/' . SIMPLE_TWEET_PAGE .'">See More Tweets</a>';
-	$op .= '</div>';    
+    $op .= '<div class="simple-bottom">';
+    $op .= '<a class="follow-twitter" href="/' . SIMPLE_TWEET_PAGE .'">' . variable_get('simple_tweet_block_link', '') . '</a>';
+    $op .= '</div>';    
   }
   return $op;
 }
@@ -183,19 +184,28 @@ function theme_simple_tweet_tweet($twit) {
 function _simple_tweet_get_twitters() {  
   //get rss url
   $rss_url = variable_get('simple_tweet_rss_url', '');
-  if(!$rss_url) {
+  if (!$rss_url) {
     drupal_set_message(t('Please set your Twitter User RSS Feed.'), 'error'); 
   }
   //retrieve from twitter  
   $ch = curl_init($rss_url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
   curl_setopt($ch, CURLOPT_HEADER, 0);
+  //exec curl
   $gettwit = curl_exec($ch);
-  curl_close($ch);
-  //parse the data
-  if($gettwit) { 
-  	$twitters = new SimpleXMLElement($gettwit); 
+  //if the tweets rss feed has an error
+  if (curl_error($ch) == TRUE) {
+    //log error
+    watchdog('simple_tweet', 'RSS Feed Error is: ' . curl_error($ch));
   }
+  else {
+    //parse the data
+    if ($gettwit) { 
+      $twitters = new SimpleXMLElement($gettwit); 
+    }
+  }
+  //close curl
+  curl_close($ch);
   return $twitters;
 }
 
@@ -203,11 +213,11 @@ function _simple_tweet_get_twitters() {
  * Process Links in Tweets
  */
 function _simple_tweet_process_links($text) {
-	$text = preg_replace("#(^|[\n ])([\w]+?://[\w]+[^ \"\n\r\t< ]*)#", "\\1<a href=\"\\2\">\\2</a>", $text);
-    $text = preg_replace("#(^|[\n ])((www|ftp)\.[^ \"\t\n\r< ]*)#", "\\1<a href=\"http://\\2\">\\2</a>", $text);
-	$text = preg_replace("#(^|[\n ])@([^ \"\t\n\r<]*)#ise", "'\\1<a href=\"http://www.twitter.com/\\2\" target=\"_blank\">@\\2</a>'", $text);  
-	$text = preg_replace("#(^|[\n ])\#([^ \"\t\n\r<]*)#ise", "'\\1<a href=\"http://twitter.com/#search?q=\\2\" target=\"_blank\">#\\2</a>'", $text);
-	return $text;
+  $text = preg_replace("#(^|[\n ])([\w]+?://[\w]+[^ \"\n\r\t< ]*)#", "\\1<a href=\"\\2\" target=\"_blank\">\\2</a>", $text);
+  $text = preg_replace("#(^|[\n ])((www|ftp)\.[^ \"\t\n\r< ]*)#", "\\1<a href=\"http://\\2\" target=\"_blank\">\\2</a>", $text);
+  $text = preg_replace("/@(\w+)/", "<a href=\"http://www.twitter.com/\\1\" target=\"_blank\">@\\1</a>", $text);
+  $text = preg_replace("/#(\w+)/", "<a href=\"http://search.twitter.com/search?q=\\1\" target=\"_blank\">#\\1</a>", $text);
+  return $text;
 }
 
 /**
@@ -217,11 +227,12 @@ function _simple_tweet_format_date($date) {
    $date = strtotime($date);
    $type = variable_get('simple_tweet_dateformat', 'medium');
    $system = array('small', 'medium', 'large');
-   if(!in_array($type, $system)) {
-     $format = variable_get('date_format_'.$type, 'medium');
+   if (!in_array($type, $system)) {
+     $format = variable_get('date_format_' . $type, 'medium');
      $type = 'custom';
      return format_date($date, $type, $format);
-   } else {
+   }
+   else {
      return format_date($date, $type);
    }
 }

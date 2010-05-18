@@ -1,5 +1,10 @@
 <?php
-// $Id:
+// $Id$
+/**
+ * @file
+ * Uninstall functions for the Simple Tweet module.
+ */
+
 
 /**
  * Implementation of hook_uninstall().
