@@ -57,7 +57,7 @@ function simple_tweet_admin_settings($form_state) {
   $form['simple_tweet_tweets_page_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Enter Title for your Tweets Page'),
-    '#default_value' => variable_get('simple_tweet_page_title', 'Our Tweets From Twitter'),
+    '#default_value' => variable_get('simple_tweet_tweets_page_title', 'Our Tweets From Twitter'),
   );
   $form['simple_tweet_tweets_path'] = array(
     '#type' => 'textfield',

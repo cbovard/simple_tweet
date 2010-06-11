@@ -8,7 +8,7 @@
  * Constants
  */ 
 define('SIMPLE_TWEET_PAGE', variable_get('simple_tweet_tweets_path', ''));
-define('SIMPLE_TWEET_PAGENAME', variable_get('simple_tweet_page_title', 'Our Tweets From Twitter'));
+define('SIMPLE_TWEET_PAGENAME', variable_get('simple_tweet_tweets_page_title', 'Our Tweets From Twitter'));
 
 /**
  * Implementation of hook_menu()
@@ -90,7 +90,8 @@ function simple_tweet_block($op = 'list', $delta = 0, $edit = array()) {
  */
 function simple_tweet_show_tweets() {
   $twitters = _simple_tweet_get_twitters();
-  return theme('simple_tweet_list', $twitters, NULL);
+  $op .= theme('simple_tweet_list', $twitters, NULL);
+  return $op;
 }
 
 /**
@@ -124,7 +125,9 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
   if ($number == NULL) {
     $count = count($twitters->channel->item);
     for ($i=0; $i<$count; $i++) {
-      $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i]);
+	  //assign zebra
+	  $zebra = ($i % 2) ? ' odd' : ' even';
+      $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i], $zebra);
   //coder module says this below needs to be like this!!! ??
   }
   }
@@ -133,7 +136,10 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
     //if this is the tweets block
     $count = $number;
     for ($i=0; $i<$count; $i++) {
-      $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i]);
+	  //extra code
+	  unset($zebra);
+	  if($i == 0){$zebra = ' first';}
+      $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i], $zebra);
     }  
   }
 
@@ -163,17 +169,17 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
  * @param object $twit
  * @return string
  */
-function theme_simple_tweet_tweet($twit) {
+function theme_simple_tweet_tweet($twit, $zebra) {
   $date = _simple_tweet_format_date($twit->pubDate);
   $text = _simple_tweet_process_links($twit->description);
   //get the twitter username and colon of the tweet
   $twitter_username = variable_get('simple_tweet_username', '') . ":";
-  $text = str_replace($twitter_username, "", $text);
+  $text = str_ireplace($twitter_username, "", $text);
   $text = trim($text);
   //add themeing html
-  $op = '<div class="simple-tweet">';
-  $op .= '<div class="simple-tweet-created">'. $date .'</div>';
+  $op = '<div class="simple-tweet' . $zebra . '">';
   $op .= '<div class="simple-tweet-msg">'. $text .'</div>'; 
+  $op .= '<div class="simple-tweet-created">'. $date .'</div>';
   $op .= '</div>';
   return $op;
 }
