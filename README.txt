@@ -1,5 +1,8 @@
 Drupal simple_tweet Module:
-May 11, 2010
+July 26, 2010
+
+Fixed the error handlers for the php xml parsing
+
 ----------------------
 Authors: Olly Walker and Chris Bovard
 www.ventureweb.net

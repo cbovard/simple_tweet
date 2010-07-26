@@ -191,28 +191,28 @@ function _simple_tweet_get_twitters() {
   //get rss url
   $rss_url = variable_get('simple_tweet_rss_url', '');
   if (!$rss_url) {
-    drupal_set_message(t('Please set your Twitter User RSS Feed.'), 'error'); 
+    drupal_set_message(t('Please set your Twitter User RSS Feed.'), 'error');
+	//get out
+	return;
+  }else{
+	  //if the tweets rss feed has an error
+	  if (preg_match('/^http?:\/\/.+/', $rss_url)) {
+		$twitter_xml = file_get_contents($rss_url);
+		//parse the data 
+		if(simplexml_load_string($twitter_xml)){
+			$twitters = simplexml_load_string($twitter_xml);
+			//return tweets
+			return $twitters; 
+		}else{
+			watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+		}		
+	  }else{
+		//log error
+		watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+		//get out
+		return;
+	  }
   }
-  //retrieve from twitter  
-  $ch = curl_init($rss_url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-  curl_setopt($ch, CURLOPT_HEADER, 0);
-  //exec curl
-  $gettwit = curl_exec($ch);
-  //if the tweets rss feed has an error
-  if (curl_error($ch) == TRUE) {
-    //log error
-    watchdog('simple_tweet', 'RSS Feed Error is: ' . curl_error($ch));
-  }
-  else {
-    //parse the data
-    if ($gettwit) { 
-      $twitters = new SimpleXMLElement($gettwit); 
-    }
-  }
-  //close curl
-  curl_close($ch);
-  return $twitters;
 }
 
 /**
