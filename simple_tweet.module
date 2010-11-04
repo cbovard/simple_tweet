@@ -3,7 +3,7 @@
 /**
  * Simple Tweet Module
  */
- 
+
 /**
  * Constants
  */ 
@@ -125,8 +125,8 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
   if ($number == NULL) {
     $count = count($twitters->channel->item);
     for ($i=0; $i<$count; $i++) {
-	  //assign zebra
-	  $zebra = ($i % 2) ? ' odd' : ' even';
+    //assign zebra
+    $zebra = ($i % 2) ? ' odd' : ' even';
       $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i], $zebra);
   //coder module says this below needs to be like this!!! ??
   }
@@ -136,9 +136,9 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
     //if this is the tweets block
     $count = $number;
     for ($i=0; $i<$count; $i++) {
-	  //extra code
-	  unset($zebra);
-	  if($i == 0){$zebra = ' first';}
+    //extra code
+    unset($zebra);
+    if($i == 0){$zebra = ' first';}
       $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i], $zebra);
     }  
   }
@@ -192,26 +192,26 @@ function _simple_tweet_get_twitters() {
   $rss_url = variable_get('simple_tweet_rss_url', '');
   if (!$rss_url) {
     drupal_set_message(t('Please set your Twitter User RSS Feed.'), 'error');
-	//get out
-	return;
+  //get out
+  return;
   }else{
-	  //if the tweets rss feed has an error
-	  if (preg_match('/^http?:\/\/.+/', $rss_url)) {
-		$twitter_xml = file_get_contents($rss_url);
-		//parse the data 
-		if(simplexml_load_string($twitter_xml)){
-			$twitters = simplexml_load_string($twitter_xml);
-			//return tweets
-			return $twitters; 
-		}else{
-			watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
-		}		
-	  }else{
-		//log error
-		watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
-		//get out
-		return;
-	  }
+    //if the tweets rss feed has an error
+    if (preg_match('/^http?:\/\/.+/', $rss_url)) {
+    $twitter_xml = file_get_contents($rss_url);
+    //parse the data 
+    if(simplexml_load_string($twitter_xml)){
+      $twitters = simplexml_load_string($twitter_xml);
+      //return tweets
+      return $twitters; 
+    }else{
+      watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+    }   
+    }else{
+    //log error
+    watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+    //get out
+    return;
+    }
   }
 }
 
