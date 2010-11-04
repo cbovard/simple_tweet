@@ -169,18 +169,23 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
  * @return string
  */
 function theme_simple_tweet_tweet($twit, $zebra) {
-  $date = _simple_tweet_format_date($twit->pubDate);
-  $text = _simple_tweet_process_links($twit->description);
-  //get the twitter username and colon of the tweet
-  $twitter_username = variable_get('simple_tweet_username', '') . ":";
-  $text = str_ireplace($twitter_username, "", $text);
-  $text = trim($text);
-  //add themeing html
-  $op = '<div class="simple-tweet' . $zebra . '">';
-  $op .= '<div class="simple-tweet-msg">'. $text .'</div>'; 
-  $op .= '<div class="simple-tweet-created">'. $date .'</div>';
-  $op .= '</div>';
-  return $op;
+  if ($twit->description != "") {
+    $date = _simple_tweet_format_date($twit->pubDate);
+    $text = _simple_tweet_process_links($twit->description);
+    //get the twitter username and colon of the tweet
+    $twitter_username = variable_get('simple_tweet_username', '') . ":";
+    $text = str_ireplace($twitter_username, "", $text);
+    $text = trim($text);
+    //add themeing html
+    $op = '<div class="simple-tweet' . $zebra . '">';
+    $op .= '<div class="simple-tweet-msg">'. $text .'</div>'; 
+    $op .= '<div class="simple-tweet-created">'. $date .'</div>';
+    $op .= '</div>';
+    return $op;
+  }
+  else {
+    return "";
+  }
 }
 
 /**
