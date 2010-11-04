@@ -125,11 +125,10 @@ function theme_simple_tweet_list($twitters, $number = NULL) {
   if ($number == NULL) {
     $count = count($twitters->channel->item);
     for ($i=0; $i<$count; $i++) {
-    //assign zebra
-    $zebra = ($i % 2) ? ' odd' : ' even';
+      //assign zebra
+      $zebra = ($i % 2) ? ' odd' : ' even';
       $op .= theme('simple_tweet_tweet', $twitters->channel->item[$i], $zebra);
-  //coder module says this below needs to be like this!!! ??
-  }
+    }
   }
   else{
   //coder module says above has to be this way
