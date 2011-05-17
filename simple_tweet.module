@@ -204,20 +204,26 @@ function _simple_tweet_get_twitters() {
 	{	
 	  //if the tweets rss feed has an error
 	  if (preg_match('/^http?:\/\/.+/', $rss_url)) {		  
-		$twitter_xml = curl($rss_url);						
-		//parse the data 
-		if(simplexml_load_string($twitter_xml)){
-			$twitters = simplexml_load_string($twitter_xml);
-			watchdog('simple_tweet','uncached-data: ' .print_r($twitters, TRUE));
-			$serialized = str_replace(
-				   array('O:16:"SimpleXMLElement":0:{}', 'O:16:"SimpleXMLElement":'),
-				   array('s:0:"";', 'O:8:"stdClass":'),
-				   serialize($twitters));						
-			cache_set('simple_tweet_cached_data', $serialized,'cache', time() + (60 * 60));						
-			//return tweets
-			return $twitters; 
-		}else{
-			watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+		$twitter_xml = curl($rss_url);
+		if(strpos($twitter_xml,'Rate limit exceeded.') <= 0)
+		{			
+			//parse the data 
+			if(simplexml_load_string($twitter_xml)){
+				$twitters = simplexml_load_string($twitter_xml);
+				$serialized = str_replace(
+					   array('O:16:"SimpleXMLElement":0:{}', 'O:16:"SimpleXMLElement":'),
+					   array('s:0:"";', 'O:8:"stdClass":'),
+					   serialize($twitters));						
+				cache_set('simple_tweet_cached_data', $serialized,'cache', time() + (60 * 60));						
+				//return tweets
+				return $twitters; 
+			}else{
+				watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+			}
+		}
+		else
+		{
+			watchdog('simple_tweet', 'Twitter Rate limit exceeded.');
 		}		
 	  }else{
 		//log error
