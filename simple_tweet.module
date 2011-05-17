@@ -197,7 +197,6 @@ function _simple_tweet_get_twitters() {
   }else{
 	  if (($cache = cache_get('simple_tweet_cached_data')) && !empty($cache->data))  {
 		$twitters = unserialize($cache->data);
-		watchdog('simple_tweet','cached-data: ' .print_r($twitters, TRUE));
 		return $twitters;		
 	} 
 	else
