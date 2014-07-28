@@ -80,7 +80,7 @@ function simple_tweet_block($op = 'list', $delta = 0, $edit = array()) {
           //the variable here is different on the end because there is only one tweet.
           $block['content'] = theme('simple_tweet_list', $twitters, 1);
         break;
-    } //end switch
+      } //end switch
   return $block;
   }
 }
@@ -195,16 +195,34 @@ function _simple_tweet_get_twitters() {
 	//get out
 	return;
   }else{
+	  if (($cache = cache_get('simple_tweet_cached_data')) && !empty($cache->data))  {
+		$twitters = unserialize($cache->data);
+		return $twitters;		
+	} 
+	else
+	{	
 	  //if the tweets rss feed has an error
-	  if (preg_match('/^http?:\/\/.+/', $rss_url)) {
-		$twitter_xml = file_get_contents($rss_url);
-		//parse the data 
-		if(simplexml_load_string($twitter_xml)){
-			$twitters = simplexml_load_string($twitter_xml);
-			//return tweets
-			return $twitters; 
-		}else{
-			watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+	  if (preg_match('/^http?:\/\/.+/', $rss_url)) {		  
+		$twitter_xml = curl($rss_url);
+		if(strpos($twitter_xml,'Rate limit exceeded.') <= 0)
+		{			
+			//parse the data 
+			if(simplexml_load_string($twitter_xml)){
+				$twitters = simplexml_load_string($twitter_xml);
+				$serialized = str_replace(
+					   array('O:16:"SimpleXMLElement":0:{}', 'O:16:"SimpleXMLElement":'),
+					   array('s:0:"";', 'O:8:"stdClass":'),
+					   serialize($twitters));						
+				cache_set('simple_tweet_cached_data', $serialized,'cache', time() + (60 * 60));						
+				//return tweets
+				return $twitters; 
+			}else{
+				watchdog('simple_tweet', 'There is an issue with the RSS twitter Feed');
+			}
+		}
+		else
+		{
+			watchdog('simple_tweet', 'Twitter Rate limit exceeded.');
 		}		
 	  }else{
 		//log error
@@ -212,7 +230,17 @@ function _simple_tweet_get_twitters() {
 		//get out
 		return;
 	  }
+	}
   }
+}
+
+function curl($url){            
+	$ch = curl_init();           
+	curl_setopt($ch, CURLOPT_URL, $url);  
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);	
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);            
+	return curl_exec($ch);           
+	curl_close($ch);        
 }
 
 /**
